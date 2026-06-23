@@ -34,7 +34,7 @@ pillow
 Set up your environment using:
 
 ```bash
-pip install torch>=2.0.0 torchvision opencv-python matplotlib numpy pillow
+pip3 install torch>=2.0.0 torchvision opencv-python matplotlib numpy pillow
 ```
 
 ## Training Process
@@ -48,8 +48,8 @@ python3 train.py --model_name mono_model --log_dir log --batch_size 16 --num_epo
 ## Evaluation
 To prepare the ground truth depth maps run:
 ```bash
-python export_gt_depth.py --data_path kitti_data --split eigen
-python export_gt_depth.py --data_path kitti_data --split eigen_benchmark
+python3 export_gt_depth.py --data_path kitti_data --split eigen
+python3 export_gt_depth.py --data_path kitti_data --split eigen_benchmark
 ```
 
 To evaluate on the test set or generate depth maps for unseen images:
