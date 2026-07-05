@@ -153,3 +153,5 @@ python3 test_simple.py \
     --pretrained_path log/ckpt.pth \
     --save_npy
 ```
+## License
+This project is licensed under the [MIT License](https://github.com/apperrs/EdgeAware-Depth/blob/main/LICENSE).
