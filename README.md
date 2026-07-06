@@ -67,12 +67,13 @@ The train/test/validation splits are defined in the `splits/` and `cityscapes/sp
 This project is developed with Python 3.8.10, PyTorch 2.4.1, and CUDA 12.8. Main required packages:
 
 ```
-torch>=2.0.0
+torch
 torchvision
 opencv-python
 matplotlib
 numpy
 pillow
+mmcv
 ```
 
 Set up your environment using:
@@ -80,6 +81,8 @@ Set up your environment using:
 ```bash
 pip3 install torch==2.4.1 torchvision==0.19.1 --index-url https://download.pytorch.org/whl/cu124
 pip3 install -r requirements.txt
+pip3 install -U openmim
+mim install mmcv-full
 ```
 
 ## Pretrained Weights
