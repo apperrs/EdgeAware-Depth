@@ -103,23 +103,7 @@ python3 train.py --model_name mono_model --log_dir log --batch_size 16 --num_epo
 
 ```bash
 cd cityscapes
-python3 train.py \
-    --data_path datasets/cityscapes \
-    --data_path_pre datasets/cityscapes_preprocessed \
-    --dataset cityscapes \
-    --log_dir log \
-    --exp_name edgeaware_cityscapes \
-    --width 640 \
-    --height 192 \
-    --num_scales 4 \
-    --num_layers 18 \
-    --batch_size 64 \
-    --lr_sche_type cosine \
-    --learning_rate 1e-4 \
-    --eta_min 1e-6 \
-    --num_epochs 20 \
-    --decay_step 15 \
-    --decay_rate 0.1 \
+python3 train.py --data_path datasets/cityscapes --data_path_pre datasets/cityscapes_preprocessed --dataset cityscapes --log_dir log --exp_name edgeaware_cityscapes --width 640 --height 192 --batch_size 12 --learning_rate 1e-4 --num_epochs 20
 ```
 
 ## Evaluation
