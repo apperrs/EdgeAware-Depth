@@ -24,7 +24,6 @@ if not HAS_MMCV:
         "Please install mmcv by 'pip install mmcv' and retry. "
     )
 
-
 class BasicBlock(nn.Module):
     expansion = 1
 
