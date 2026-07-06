@@ -18,6 +18,12 @@ except ImportError:
     HAS_MMCV = False
     MMCVResNet = None
 
+if not HAS_MMCV:
+    raise ImportError(
+        "mmcv is not installed. This project requires mmcv to be installed. "
+        "Please install mmcv by 'pip install mmcv' and retry. "
+    )
+
 
 class BasicBlock(nn.Module):
     expansion = 1
