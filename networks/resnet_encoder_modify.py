@@ -258,7 +258,7 @@ def mmcv_resnet_multiimage_input(num_layers, pretrained, num_input_images=1):
 
 
 class ResnetEncoderModify(nn.Module):
-    def __init__(self, num_layers, pretrained, num_input_images=1, use_mmcv=True):
+    def __init__(self, num_layers, pretrained, num_input_images=1, use_mmcv=False):
         super(ResnetEncoderModify, self).__init__()
 
         self.num_ch_enc = np.array([64, 64, 128, 256, 512])
