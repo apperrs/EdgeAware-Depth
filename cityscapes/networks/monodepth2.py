@@ -10,6 +10,14 @@ from collections import OrderedDict
 from einops import rearrange
 from layers import *
 
+try:
+    import mmcv
+    from mmcv.cnn import ResNet as MMCVResNet
+    HAS_MMCV = True
+except ImportError:
+    HAS_MMCV = False
+    MMCVResNet = None
+
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -150,7 +158,7 @@ class ResNet(nn.Module):
 
 
 def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1):
-    assert num_layers in [18, 50], ""
+    assert num_layers in [18, 50], "Only ResNet18 and ResNet50 are supported."
 
     if num_layers == 18:
         block = BasicBlock
@@ -185,10 +193,80 @@ def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1):
     return model
 
 
+class MMCVResNetWrapper(nn.Module):
+    def __init__(self, mmcv_resnet):
+        super().__init__()
+        self.conv1 = mmcv_resnet.conv1
+        self.maxpool = mmcv_resnet.maxpool
+        self.res_layers = mmcv_resnet.res_layers
+        self.layer1 = self.res_layers[0]
+        self.layer2 = self.res_layers[1]
+        self.layer3 = self.res_layers[2]
+        self.layer4 = self.res_layers[3]
+
+    def forward(self, x):
+        x = self.conv1(x)
+        features = [x]
+        x = self.maxpool(x)
+        for layer in self.res_layers:
+            x = layer(x)
+            features.append(x)
+        return features
+
+
+def mmcv_resnet_multiimage_input(num_layers, pretrained, num_input_images=1):
+    if not HAS_MMCV:
+        raise ImportError(
+            "mmcv is not installed, cannot use MMCV backbone. "
+            "Please install mmcv by 'pip install mmcv' and retry."
+        )
+    assert num_layers in [18, 50], "Only ResNet18 and ResNet50 are supported."
+
+    init_cfg = None
+    if pretrained:
+        init_cfg = dict(
+            type='Pretrained',
+            checkpoint=f'torchvision://resnet{num_layers}'
+        )
+
+    model = MMCVResNet(
+        depth=num_layers,
+        in_channels=3,
+        stem_channels=64,
+        base_channels=64,
+        num_stages=4,
+        strides=(1, 2, 2, 2),
+        dilations=(1, 1, 1, 1),
+        out_indices=(4,),
+        frozen_stages=-1,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=False,
+        style='pytorch',
+        init_cfg=init_cfg
+    )
+
+    if pretrained:
+        model.init_weights()
+
+    if num_input_images > 1:
+        old_conv = model.conv1.conv
+        old_weight = old_conv.weight.data
+        new_in_channels = num_input_images * 3
+        new_weight = torch.cat([old_weight] * num_input_images, dim=1) / num_input_images
+
+        new_conv = nn.Conv2d(
+            new_in_channels, 64,
+            kernel_size=7, stride=2, padding=3, bias=False
+        )
+        new_conv.weight.data = new_weight
+        model.conv1.conv = new_conv
+
+    wrapper = MMCVResNetWrapper(model)
+    return wrapper
+
+
 class DepthEncoder(nn.Module):
-
-
-    def __init__(self, num_layers, pretrained, num_input_images=1):
+    def __init__(self, num_layers, pretrained, num_input_images=1, use_mmcv=False):
         super(DepthEncoder, self).__init__()
 
         self.num_ch_enc = np.array([64, 64, 128, 256, 512])
@@ -196,10 +274,15 @@ class DepthEncoder(nn.Module):
         if num_layers > 34:
             self.num_ch_enc[1:] *= 4
 
-        if num_input_images > 1:
-            self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images)
+        if use_mmcv:
+            self.encoder = mmcv_resnet_multiimage_input(
+                num_layers, pretrained, num_input_images
+            )
         else:
-            self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images=1)
+            if num_input_images > 1:
+                self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images)
+            else:
+                self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images=1)
 
     def forward(self, input_image):
         x = (input_image - 0.45) / 0.225
