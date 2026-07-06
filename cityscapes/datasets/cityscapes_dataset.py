@@ -100,10 +100,10 @@ class CityscapesDataset(MonoDataset):
 
     def get_image_path(self, city, frame_name):
         if self.is_train:
-            return os.path.join(self.data_path, city, "{}.png".format(frame_name))
+            return os.path.join(self.data_path, city, "{}.jpg".format(frame_name))
         else:
             folder = "leftImg8bit_sequence"
             split = "test"
             image_path = os.path.join(
-                self.data_path, folder, split, city, frame_name + '_leftImg8bit.png')
+                self.data_path, folder, split, city, frame_name + '_leftImg8bit.jpg')
             return image_path            
